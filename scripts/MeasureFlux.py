@@ -14,10 +14,11 @@ import pandas as pd
 
 from astropy.io import fits 
 from astropy import units as u
+from astropy.wcs import WCS
 from spectral_cube import SpectralCube
 
 from astropy.coordinates import SkyCoord 
-from photutils.aperture import SkyCircularAperture, AperturePhotometry
+from photutils.aperture import SkyCircularAperture, aperture_photometry
 
 
 # Define the file with the lines
@@ -29,9 +30,9 @@ folderPath = '/home/polaris/nitrogen_mrk996/data/narrowFieldMaps'
 mapsPrefix = 'NFM_'
 
 # Define folder for output 
-ouputPath = '/home/polaris/nitrogen_mrk996/data'
+outputFolderPath = '/home/polaris/nitrogen_mrk996/data/'
 outputName = 'NFM_Fluxes.csv'
-
+outputPath = outputFolderPath + outputName
 
 
 # Define the zone of flux measured, in this case a circular aperture
@@ -44,17 +45,48 @@ radius_arcsec = 0.15  * u.arcsec
 aperture = SkyCircularAperture(centerCoordsObj, r=radius_arcsec)
 
 
+# Define data for save file
+linesNames = linesList['Name']
+fluxes = []
+fluxes_err = []
+
 
 # Loop over the lines in the file 
 for line in list(linesList.index):
     lineName = linesList.iloc[line]['Name']
+    print(f"Processing {lineName}")
 
-    # Access the narrow filter map for that line 
-    mapPath = folderPath + '/' + mapsPrefix + lineName + '.fits'
-    narrowFilterMap = fits.open(mapPath)
-    narrowFilterData = narrowFilterMap[0].data
-    narrowFilterMap.close()
+    # Access the narrow-filter map for that line 
+    mapPath = folderPath + '/' + mapsPrefix + lineName + '.fits' 
 
-    # Measure the flux in the previously defined regios 
-    phot = AperturePhotometry(narrowFilterData, aperture)
+    try: 
+        with fits.open(mapPath) as hdul: 
+            narrowFilterData = hdul[0].data 
+            wcs = hdul[0].header 
+    except FileNotFoundError: 
+        print(f" Map not found: {mapPath}") 
+        fluxes.append(np.nan) 
+        fluxes_err.append(np.nan) 
+        continue 
 
+    # Create WCS from the FITS header 
+    wcs = WCS(wcs) 
+    # Perform aperture photometry 
+    phot = aperture_photometry( narrowFilterData, aperture, wcs=wcs ) 
+
+    # Extract aperture sum 
+    flux = phot['aperture_sum'][0] 
+    fluxes.append(flux)
+
+
+# Create a dataFrame with the information
+data = {'name': linesNames,
+        'flux': fluxes
+        }
+
+df = pd.DataFrame(data)
+
+# Save everything to .csv file
+df.to_csv(outputPath, index=False)
+
+print(f'Saved {outputName} to {outputPath}')
