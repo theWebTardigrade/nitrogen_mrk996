@@ -66,7 +66,7 @@ linesWav_obs = linesWav.to_numpy() * (1 + redshift)
 
 
 # Create figure with 5 subplots
-fig, axes = plt.subplots(len(edges), 1, figsize=(30, 10), sharey=True)
+fig, axes = plt.subplots(len(edges), 1, figsize=(30, 15), sharey=True)
 
 
 # Plot each wavelength section
@@ -78,7 +78,8 @@ for i, ax in enumerate(axes):
 
     # Select spectrum in this wavelength range
     mask = (spectral_axis >= wav_min) & (spectral_axis <= wav_max)
-    ax.plot(spectral_axis[mask], spectrum[mask], color='black')
+
+    ax.plot(spectral_axis[mask], spectrum[mask], color='black', linewidth=1)
 
     # Mark emission lines in this wavelength range
     for name, wav in zip(linesNames, linesWav_obs):

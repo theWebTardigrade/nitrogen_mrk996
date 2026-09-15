@@ -145,16 +145,22 @@ for idx in masked_indices:
         print(f"Fit failed at {wave:.2f} Å: {e}")
 
 
+# Print the average of the results
+average_fwhm = np.mean(fwhm)
+print('Average', average_fwhm)
+
+
 # Plot the results
 plt.figure(figsize=(10, 5))
 
-plt.plot(fwhm_wavelengths, fwhm)
+plt.plot(fwhm_wavelengths, fwhm, linestyle='none', marker='o', markersize=5)
 
 plt.xlabel('Observed wavelength (Å)')
 plt.ylabel('Moffat FWHM (arcsec)')
 plt.grid(alpha=0.2)
 
 plt.tight_layout()
+plt.savefig('/home/polaris/nitrogen_mrk996/data/fwhm_wave.png')
 plt.show()
 
 file.close()
