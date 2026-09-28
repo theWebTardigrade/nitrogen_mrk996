@@ -20,17 +20,17 @@ from astropy.io import fits
 
 
 # Define info about target
-cube_file_path = '/home/polaris/nitrogen_mrk996/data/Mrk996.fits'
-redshift = 0.0054
+cube_file_path = '/home/polaris/nitrogen_mrk996/data/haro11/Haro11_ec_all.rc.fits'
+redshift = 0.020598
 
 line_list_file_path = '/home/polaris/nitrogen_mrk996/data/NarrowFiltersInput.csv'
-output_path = '/home/polaris/nitrogen_mrk996/data/narrowFieldMaps'
+output_path = '/home/polaris/nitrogen_mrk996/data/haro11/narrowFieldMapsNoise'
 os.makedirs(output_path, exist_ok=True)
 
 
 # Open the cube
 file = fits.open(cube_file_path)
-cube = SpectralCube.read(file[1])
+cube = SpectralCube.read(file[2])
 
 
 # Function to create the narrow filter maps
@@ -105,5 +105,5 @@ for line in list(lines_list.index):
     if line_map is None: 
         continue
 
-    output_file = os.path.join( output_path, f"NFM_{name}.fits" ) 
+    output_file = os.path.join( output_path, f"NFM_noise_{name}.fits" ) 
     line_map.write(output_file, overwrite=True)

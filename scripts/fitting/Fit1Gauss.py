@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 '''
 Created on Mon Sep 14 14:16:00 2026
 
@@ -8,6 +6,7 @@ Fit Gaussians to the lines
 
 '''
 
+# --------------------------------- Libraries -------------------------------- #
 
 # Import libraries
 import numpy as np
@@ -19,20 +18,41 @@ from spectral_cube import SpectralCube
 
 from astropy.coordinates import SkyCoord 
 
+from lmfit.models import LinearModel, GaussianModel
+
+from datetime import datetime
+
+
+# -------------------------------- Parameters -------------------------------- #
+
 
 # Define info about target
-cube_file_path = '/home/polaris/nitrogen_mrk996/data/Mrk996.fits'
-redshift = 0.0054
+cube_file_path = '/home/polaris/nitrogen_haro11/data/Haro11_ec_all.rc.fits'
+redshift = 0.0206467
 
-line_list_file_path = '/home/polaris/nitrogen_mrk996/data/NarrowFiltersInput.csv'
-output_path = '/home/polaris/nitrogen_mrk996/data'
 
-# Read the file with the line list
-lines_list = pd.read_csv(line_list_file_path, sep=',', comment='#', header=0)
 
-# Open the cube
-file = fits.open(cube_file_path)
-cube = SpectralCube.read(file[1])
+
+
+
+
+# ---------------------------------- Models ---------------------------------- #
+
+mynan_policy = 'propagate'
+
+gauss = GaussianModel(prefix="gauss", nan_policy=mynan_policy)
+linear = LinearModel(prefix="linear", nan_policy=mynan_policy) # Continuum
+
+
+print("-------------- Spectra fitting -----------")
+print("        " +     str(datetime.now()))
+print("------------------------------------------")
+
+
+
+
+
+
 
 
 # Fit Gaussian per line

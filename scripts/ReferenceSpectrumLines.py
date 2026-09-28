@@ -22,7 +22,7 @@ from astropy.io import fits
 
 # Define info about target
 cube_file_path = '/home/polaris/nitrogen_mrk996/data/Mrk996.fits'
-redshift = 0.0054
+redshift = 0.020598
 
 # Define point of spectrum
 centerCoordsObj = SkyCoord(ra=21.89848459, dec=-6.32641114, unit='deg', frame='icrs')

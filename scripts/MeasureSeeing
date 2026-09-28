@@ -21,31 +21,18 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy.modeling import models, fitting
 
+# Ignore the warnings
 import warnings
 from spectral_cube.wcs_utils import WCSWarning
 warnings.filterwarnings("ignore", category=WCSWarning)
 
 # Define info about target
-cube_file_path = '/home/polaris/nitrogen_mrk996/data/Mrk996.fits'
-redshift = 0.0054
+cube_file_path = '/home/polaris/nitrogen_haro11/data/haro11/Haro11_ec_all.rc.fits'
+
 
 # Define point of spectrum
-center_x = 177
-center_y = 197
-radius_pixels = 0.2/0.025
-
-
-
-# Define the file with the lines
-linesFilePath = '/home/polaris/nitrogen_mrk996/data/NarrowFiltersInput.csv'
-linesList = pd.read_csv(linesFilePath, sep=',', comment='#', header=0)
-linesInf = linesList['l_linf']
-linesSup = linesList['l_lsup']
-
-
-# Observed-frame limits of the emission lines
-linesInf_obs = linesInf.to_numpy() * (1 + redshift)
-linesSup_obs = linesSup.to_numpy() * (1 + redshift)
+centerCoords = [(267, 216), (319, 62), (241, 188)]
+radius_pixels = 0.1/0.025
 
 
 # Open the cube
@@ -55,112 +42,139 @@ cube = SpectralCube.read(file[1])
 # Spectral axis
 spectral_axis = cube.spectral_axis.to_value(u.AA)
 
-# Start with everything included
-mask = np.ones(len(spectral_axis), dtype=bool)
 
-# Remove the 5870-6050 Å gap
-mask &= ~((spectral_axis >= 5870) & (spectral_axis <= 6050))
+bin_width = 125.0  # Å
+wave_min = spectral_axis.min()
+wave_max = spectral_axis.max()
 
-# Remove the emission-line intervals
-for inf, sup in zip(linesInf_obs, linesSup_obs):
-    mask &= ~((spectral_axis >= inf) & (spectral_axis <= sup))
+# Create non-overlapping bins
+bin_edges = np.arange(wave_min, wave_max + bin_width, bin_width)
 
-# Final wavelength array
-masked_spectralAxis = spectral_axis[mask]
-
-# Original cube indices corresponding to these wavelengths
-masked_indices = np.where(mask)[0]
-
-
-
-# Circular mask
-ny, nx = cube.shape[1], cube.shape[2]
-y, x = np.indices((ny, nx))
-circle_mask = (x - center_x)**2 + (y - center_y)**2 <= radius_pixels**2
-
-# Fit the center zone with a 2DMoffat and obtain the FWHM
 fwhm = []
 fwhm_wavelengths = []
 
-for idx in masked_indices:
 
-    wave = spectral_axis[idx]
-    print(wave)
+for point in centerCoords:
 
-    # Get image
-    image = cube[idx].value
+    # Point values
+    point_fwhm = []
+    point_fwhm_wavelengths = []
 
-    # Apply circular mask
-    x_fit = x[circle_mask]
-    y_fit = y[circle_mask]
-    z_fit = image[circle_mask]
 
-    # Remove NaN/inf values
-    valid = np.isfinite(z_fit)
-    x_fit = x_fit[valid]
-    y_fit = y_fit[valid]
-    z_fit = z_fit[valid]
+    # Define the circular mask for each point
+    center_x = point[0]
+    center_y = point[1]
+    
+    ny, nx = cube.shape[1], cube.shape[2]
+    y, x = np.indices((ny, nx))
+    circle_mask = (x - center_x)**2 + (y - center_y)**2 <= radius_pixels**2
 
-    # Skip invalid images
-    if len(z_fit) < 10:
-        continue
+    # For each bin, fit the center with a 2DMoffat and obtain the FWHM
+    for bin_start, bin_end in zip(bin_edges[:-1], bin_edges[1:]):
 
-    amplitude = np.nanmax(z_fit)
+        # Skip bins that contain the 5870–6050 Å gap
+        if bin_start < 6050 and bin_end > 5870:
+            print(f"Skipping {bin_start:.1f} - {bin_end:.1f} Å (gap)")
+            continue
 
-    if not np.isfinite(amplitude) or amplitude <= 0:
-        continue
-
-    model_init = models.Moffat2D(
-        amplitude=amplitude,
-        x_0=center_x,
-        y_0=center_y,
-        gamma=2.0,
-        alpha=2.0
-    )
-
-    model_init.x_0.bounds = (center_x - 5, center_x + 5)
-    model_init.y_0.bounds = (center_y - 5, center_y + 5)
-    model_init.gamma.bounds = (0.1, 20)
-    model_init.alpha.bounds = (1.01, 20)
-
-    fitter = fitting.LevMarLSQFitter()
-
-    try:
-        fitted_model = fitter(
-            model_init,
-            x_fit,
-            y_fit,
-            z_fit,
-            filter_non_finite=True
+        # Find channels inside this wavelength bin
+        bin_mask = (
+            (spectral_axis >= bin_start) &
+            (spectral_axis < bin_end)
         )
 
-        fwhm_pixels = fitted_model.fwhm
-        fwhm_arcseconds = fwhm_pixels * 0.025
+        bin_indices = np.where(bin_mask)[0]
 
-        if np.isfinite(fwhm_arcseconds):
-            fwhm_wavelengths.append(wave)
-            fwhm.append(fwhm_arcseconds)
+        if len(bin_indices) == 0:
+            continue
 
-    except Exception as e:
-        print(f"Fit failed at {wave:.2f} Å: {e}")
+        # Central wavelength
+        central_wavelength = (bin_start + bin_end) / 2
+
+        print(f"{bin_start:.1f} - {bin_end:.1f} Å")
+
+        # Get all channels in the bin
+        subcube = cube[bin_indices[0]:bin_indices[-1] + 1, :, :]
+
+        # Create the 2D integrated image
+        image = subcube.moment(order=0).value
+
+        # Apply circular mask
+        x_fit = x[circle_mask]
+        y_fit = y[circle_mask]
+        z_fit = image[circle_mask]
+
+        # Remove NaN/inf values
+        valid = np.isfinite(z_fit)
+        x_fit = x_fit[valid]
+        y_fit = y_fit[valid]
+        z_fit = z_fit[valid]
+
+        # Skip invalid images
+        if len(z_fit) < 10:
+            continue
+
+        amplitude = np.nanmax(z_fit)
+
+        if not np.isfinite(amplitude) or amplitude <= 0:
+            continue
+
+        model_init = models.Moffat2D(
+            amplitude=amplitude,
+            x_0=center_x,
+            y_0=center_y,
+            gamma=1.0,
+            alpha=1.0
+        )
+
+        fitter = fitting.LevMarLSQFitter()
+
+        try:
+            fitted_model = fitter(
+                model_init,
+                x_fit,
+                y_fit,
+                z_fit,
+                filter_non_finite=True
+            )
+
+            fwhm_pixels = fitted_model.fwhm
+            fwhm_arcseconds = fwhm_pixels * 0.025
+
+            if np.isfinite(fwhm_arcseconds):
+                point_fwhm_wavelengths.append(central_wavelength)
+                point_fwhm.append(fwhm_arcseconds)
+
+        except Exception as e:
+            print(f"Fit failed at {central_wavelength:.2f} Å: {e}")
+
+    fwhm.append(point_fwhm)
+    fwhm_wavelengths.append(point_fwhm_wavelengths)
 
 
 # Print the average of the results
-average_fwhm = np.mean(fwhm)
-print('Average', average_fwhm)
+average_fwhm = np.mean(np.concatenate(fwhm))
+
+print("Average:", average_fwhm)
 
 
-# Plot the results
+# Plot figure
 plt.figure(figsize=(10, 5))
 
-plt.plot(fwhm_wavelengths, fwhm, linestyle='none', marker='o', markersize=5)
+for wavelengths, values in zip(fwhm_wavelengths, fwhm):
+    plt.plot(
+        wavelengths,
+        values,
+        linestyle='none',
+        marker='o',
+        markersize=5
+    )
 
 plt.xlabel('Observed wavelength (Å)')
 plt.ylabel('Moffat FWHM (arcsec)')
 plt.grid(alpha=0.2)
-
 plt.tight_layout()
-plt.savefig('/home/polaris/nitrogen_mrk996/data/fwhm_wave.png')
-plt.show()
 
-file.close()
+plt.savefig('/home/polaris/nitrogen_haro11/data/fwhm_wave.png')
+
+plt.show()
