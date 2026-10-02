@@ -21,15 +21,15 @@ from astropy.coordinates import SkyCoord
 from astropy.io import fits
 
 # Define info about target
-cube_file_path = '/home/polaris/nitrogen_mrk996/data/Mrk996.fits'
+cube_file_path = '/home/polaris/nitrogen_haro11/data/Haro11_ec_all.rc.fits'
 redshift = 0.020598
 
 # Define point of spectrum
-centerCoordsObj = SkyCoord(ra=21.89848459, dec=-6.32641114, unit='deg', frame='icrs')
+centerCoordsObj = SkyCoord(ra=9.211546, dec=-33.554644, unit='deg', frame='icrs')
 radius_arcsec = 0.15 * u.arcsec
 
 # Define the file with the lines
-linesFilePath = '/home/polaris/nitrogen_mrk996/data/NarrowFiltersInput.csv'
+linesFilePath = '/home/polaris/nitrogen_haro11/data/NarrowFiltersInput.csv'
 linesList = pd.read_csv(linesFilePath, sep=',', comment='#', header=0)
 linesNames = linesList['Name']
 linesWav = linesList['lc']
@@ -97,7 +97,7 @@ for i, ax in enumerate(axes):
 
     ax.set_yscale('log')
     ax.set_xlim(wav_min, wav_max)
-    ax.set_ylim(7e1, 1e3)
+    ax.set_ylim(1, 1e2)
     ax.grid(alpha=0.2)
 
     if i < 4:
@@ -111,7 +111,7 @@ plt.tight_layout()
 
 
 # Save figure
-output_path = '/home/polaris/nitrogen_mrk996/data/spectrum_lines.png'
+output_path = '/home/polaris/nitrogen_haro11/data/spectrum_lines.png'
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 
 plt.show()

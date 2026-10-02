@@ -19,9 +19,9 @@ from powerbin import PowerBin
 
 
 # Import the Halpha map and its variance
-data_file = fits.open('/home/polaris/nitrogen_mrk996/data/haro11/narrowFieldMaps/NFM_Ha.fits')
+data_file = fits.open('/home/polaris/nitrogen_haro11/data//narrowFieldMaps/NFM_Ha.fits')
 
-variance_file = fits.open('/home/polaris/nitrogen_mrk996/data/haro11/narrowFieldMapsNoise/NFM_noise_Ha.fits')
+variance_file = fits.open('/home/polaris/nitrogen_haro11/data/narrowFieldMapsNoise/NFM_noise_Ha.fits')
 
 image_data = data_file[0].data
 variance_data = variance_file[0].data
@@ -58,7 +58,7 @@ xy = np.column_stack((x, y))
 
 
 # Target S/N
-target_sn = 1e3
+target_sn = 500
 
 
 # Capacity function
