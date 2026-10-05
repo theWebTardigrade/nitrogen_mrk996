@@ -25,17 +25,23 @@ import scripts.fitting.MUSEinstruwidth as MUSEinstruwidth
 
 
 
-# -------------------------------- Parameters -------------------------------- #
+# ----------------------------------- Files ---------------------------------- #
 
 
 # Target information
 cube_file_path = '/home/polaris/nitrogen_haro11/data/Haro11_ec_all.rc.fits'
-redshift = 0.0206467
-
 
 # Narrow Filter Map information
 narrow_map_file_path = '/home/polaris/nitrogen_haro11/data/narrowFilterMaps/NFM_Ha.fits'
 
+# Output directory
+output_dir = '/home/polaris/nitrogen_haro11/results/1dFits/Ha/'
+
+
+# -------------------------------- Parameters -------------------------------- #
+
+# Target information
+redshift = 0.0206467
 
 # Emission line information
 line_name = 'Ha'
@@ -219,4 +225,4 @@ print("Saving FITS maps")
 
 for item in labels + err_labels:
     hdu = fits.PrimaryHDU(results[item])
-    hdu.writeto(f'{item}.fits', overwrite=True)
+    hdu.writeto(f'{output_dir}{item}.fits', overwrite=True)
