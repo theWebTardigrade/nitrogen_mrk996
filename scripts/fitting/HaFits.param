@@ -1,0 +1,24 @@
+# Parameters that need to be passed to MyFit1line
+# Columns
+# 1: Name of the parameter
+# 2: Value
+# 3: Explanation
+myfilecube,Haro11_ec_all.rc.fits,MUSEcube
+mypath,/home/polaris/nitrogen_haro11/data/,path where the cube is located
+myblue,6550,Blue limit for the range to be fitted
+myred,6570,Red limit for the range to be fitted
+myz,0.00,Assumed systemic velocity
+mypathNF,/home/polaris/nitrogen_haro11/data/narrowFilterMaps/,Path for images with NF
+mypathout,/home/polaris/nitrogen_haro11/data/1dFits/Ha/,File where I save the fits
+minsig,0.80,minimum line width
+maxsig,1.40,maximum line width
+minlam,-3.0,bluest allowed offset
+maxlam,+3.0,reddest allowed offset
+myslope,-0.01,assumed slope for the local continuum
+mylcen,6562.77,CentralWavelength
+mylinename,Ha,Linename
+raiz,Ha,root name for the directories and files for slope and intercept
+myimaNF,NFM_Ha.fits,Image with NF as initial conditions
+myscale,0.3,scaling for the NF image of reference
+fmin,1.E1,minimum flux for the line
+fmax,5.E5,maximum flux for the line

@@ -32,7 +32,7 @@ from scipy.constants import c  # Light speed in m/s
 from spectral_cube import SpectralCube
 from lmfit.models import LinearModel, GaussianModel
 
-import scripts.fitting.MUSEinstruwidth as MUSEinstruwidth
+import MUSEinstruwidth as MUSEinstruwidth
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 

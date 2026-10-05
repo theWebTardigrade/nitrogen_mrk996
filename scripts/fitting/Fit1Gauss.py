@@ -21,7 +21,7 @@ from spectral_cube import SpectralCube
 
 from lmfit.models import LinearModel, GaussianModel
 
-import scripts.fitting.MUSEinstruwidth as MUSEinstruwidth
+import MUSEinstruwidth as MUSEinstruwidth
 
 
 
@@ -38,7 +38,7 @@ narrow_map_file_path = '/home/polaris/nitrogen_haro11/data/narrowFilterMaps/NFM_
 output_dir = '/home/polaris/nitrogen_haro11/results/1dFits/Ha/'
 
 
-# -------------------------------- Parameters -------------------------------- #
+# ---------------------------- Read parameter file --------------------------- #
 
 # Target information
 redshift = 0.0206467
@@ -51,7 +51,12 @@ red_lim_rest = 6570
 
 
 # Fitting constraints
-sigma_min = 1.2
+min_offset = -3.0
+max_offset = 3.0
+
+sigma_min = 0.8
+sigma_max = 1.4
+
 flux_min = 1e1
 flux_max = 1e5
 
@@ -72,7 +77,6 @@ file = fits.open(cube_file_path)
 cube = SpectralCube.read(file[1])
 var_cube = SpectralCube.read(file[2])
 
-cube = SpectralCube.read(cube_file_path)
 line_cube = cube.spectral_slab(blue_lim_obs, red_lim_obs)
 var_line_cube = var_cube.spectral_slab(blue_lim_obs, red_lim_obs)
 file.close()
@@ -153,10 +157,10 @@ for y in y_list:
 
 
         # Setup the parameter constraints
-        pars['gausssigma'].set(min=sigma_min)
+        pars['gausssigma'].set(min=sigma_min, max=sigma_max)
         pars['gaussamplitude'].set(min=flux_min, max=flux_max)
-        pars['gausscenter'].set(min=central_wav_obs - 3 , 
-                                max=central_wav_obs + 3)
+        pars['gausscenter'].set(min=central_wav_obs + min_offset , 
+                                max=central_wav_obs + max_offset)
 
 
         # Perform the fit
