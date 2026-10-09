@@ -97,7 +97,7 @@ for i, ax in enumerate(axes):
 
     ax.set_yscale('log')
     ax.set_xlim(wav_min, wav_max)
-    ax.set_ylim(1, 1e2)
+    ax.set_ylim(2, 5e2)
     ax.grid(alpha=0.2)
 
     if i < 4:
@@ -111,7 +111,7 @@ plt.tight_layout()
 
 
 # Save figure
-output_path = '/home/polaris/nitrogen_haro11/data/spectrum_lines.png'
+output_path = '/home/polaris/nitrogen_haro11/data/spectrum_lines.pdf'
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 
 plt.show()

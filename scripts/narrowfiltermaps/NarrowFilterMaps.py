@@ -63,7 +63,6 @@ def create_narrow_filter_maps(
     blue_var_subcube = variance.spectral_slab(bcont_inf*(1+redshift)* u.AA, bcont_sup*(1+redshift)* u.AA)
     blue_var_map = blue_var_subcube.moment(order=0)
 
-
     # Create the red continuum map
     red_cont_subcube = data.spectral_slab(rcont_inf*(1+redshift)* u.AA, rcont_sup*(1+redshift)* u.AA)
     red_cont_map = red_cont_subcube.moment(order=0)
