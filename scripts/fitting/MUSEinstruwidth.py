@@ -22,4 +22,3 @@ def MUSE_get_FWHMs(coeffs, lambdas):
 # array of lambdas, array of output sigmas
 def MUSE_sigmas(coeffs, lambdas):
     return MUSE_get_FWHMs(coeffs, lambdas) / 2.35482
-    

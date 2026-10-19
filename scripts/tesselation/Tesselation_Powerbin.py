@@ -21,7 +21,7 @@ from powerbin import PowerBin
 input_file = ('/home/polaris/nitrogen_haro11/data/others/cont_7000_7200_perchannel_input_tess.csv')
 output_file = ('/home/polaris/nitrogen_haro11/data/powerbin_tessellation.txt')
 
-target_sn = 60
+target_sn = 70
 
 
 # ----------------------------- Read input ---------------------------------- #
