@@ -12,6 +12,8 @@ Outputs:
 # --------------------------------- Libraries -------------------------------- #
 
 import os
+import glob
+import re
 
 import numpy as np
 
@@ -56,6 +58,7 @@ def readFADO(file_path):
     return wave_list, best_fit, norm_wave, norm_flux
 
 
+
 # ------------------------- Save best fit in new file ------------------------ #
 
 best_fit_file = 'FADO_best_fit.fits'
@@ -65,14 +68,30 @@ norm_waves = []
 norm_fluxes = []
 best_fit_spectra = []
 
-# Iterate over every item in the list
-for index, file_name in enumerate(fado_output_list):
+# Get all FADO 1D output files
+pattern = os.path.join(fado_output_path, '*1D*')
+fado_output_list = sorted(glob.glob(pattern))
+
+if not fado_output_list:
+    raise FileNotFoundError(f'No FADO output files found matching {pattern}')
+
+# Iterate over every file
+for file_name in fado_output_list:
+
+    # Extract the bin number from filenames such as Spec_000.txt.FADO_1D.fits
+    match = re.search(r'Spec_(\d+)', os.path.basename(file_name))
+
+    if match is None:
+        print(f'Skipping file with unexpected name: {file_name}')
+        continue
+
+    bin_index = int(match.group(1))
 
     # Get the data
     wave_list, best_fit, norm_wave, norm_flux = readFADO(file_name)
 
     # Save the wavelength array from the first file
-    if index == 0:
+    if not bin_indices:
         reference_wave = wave_list
 
     # Check that all spectra use the same wavelength grid
@@ -82,7 +101,7 @@ for index, file_name in enumerate(fado_output_list):
         )
 
     # Store the results
-    bin_indices.append(index)
+    bin_indices.append(bin_index)
     norm_waves.append(norm_wave)
     norm_fluxes.append(norm_flux)
     best_fit_spectra.append(best_fit)
@@ -94,6 +113,14 @@ norm_waves = np.asarray(norm_waves, dtype=float)
 norm_fluxes = np.asarray(norm_fluxes, dtype=float)
 best_fit_spectra = np.asarray(best_fit_spectra, dtype=float)
 
+# Sort all results by bin number
+order = np.argsort(bin_indices)
+
+bin_indices = bin_indices[order]
+norm_waves = norm_waves[order]
+norm_fluxes = norm_fluxes[order]
+best_fit_spectra = best_fit_spectra[order]
+
 
 # Create the binary table
 table = Table()
@@ -101,7 +128,7 @@ table = Table()
 table['BIN'] = bin_indices
 table['NORMWAV'] = norm_waves
 table['NORMFLUX'] = norm_fluxes
-table['FLUX'] = best_fit_spectra.tolist()
+table['FLUX'] = best_fit_spectra
 
 
 # Create the FITS HDUs
@@ -109,7 +136,6 @@ primary_hdu = fits.PrimaryHDU()
 
 table_hdu = fits.BinTableHDU(table, name='BEST_FIT')
 
-# Save the wavelength array in a separate extension
 wave_hdu = fits.ImageHDU(
     data=reference_wave,
     name='WAVELENGTH'
@@ -123,5 +149,6 @@ hdul = fits.HDUList([
 ])
 
 hdul.writeto(best_fit_file, overwrite=True)
+hdul.close()
 
 print(f'Saved best-fit spectra to {best_fit_file}')
