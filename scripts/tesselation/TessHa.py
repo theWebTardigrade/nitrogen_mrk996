@@ -18,11 +18,11 @@ from powerbin import PowerBin
 
 # ----------------------------- Parameters ---------------------------------- #
 
-input_file = ('/home/polaris/nitrogen_haro11/data/others/cont_7000_7200_perchannel_input_tess.csv')
-output_file = ('/home/polaris/nitrogen_haro11/data/powerbin_tessellation.txt')
+input_file = '/home/polaris/nitrogen_haro11/data/others/cont_7000_7200_perchannel_input_tess.csv'
+output_file = '/home/polaris/nitrogen_haro11/data/TessHaTable.txt'
+output_pdf_path = '/home/polaris/nitrogen_haro11/data/TessHaImage.pdf'
 
 target_sn = 70
-
 
 # ----------------------------- Read input ---------------------------------- #
 
@@ -35,11 +35,9 @@ data = np.loadtxt(
 x = data[:, 0]
 y = data[:, 1]
 signal = data[:, 2]
-variance = data[:, 3]
+noise = data[:, 3]
 
 # ----------------------------- S/N selection ------------------------------- #
-
-noise = np.sqrt(variance)
 
 sn = signal / noise
 
@@ -48,13 +46,12 @@ good = (
     np.isfinite(x)
     & np.isfinite(y)
     & np.isfinite(signal)
-    & np.isfinite(variance)
+    & np.isfinite(noise)
 )
 
 x = x[good]
 y = y[good]
 signal = signal[good]
-variance = variance[good]
 noise = noise[good]
 
 xy = np.column_stack([x, y])
@@ -114,7 +111,7 @@ pow = PowerBin(xy, capacity_spec, target_capacity=target_sn**2)
 # ----------------------------- Plot ----------------------------------------- #
 
 pow.plot(capacity_scale='sqrt', ylabel='S/N')
-plt.savefig('/home/polaris/nitrogen_haro11/data/PowerBinTesselation.pdf')
+plt.savefig(output_pdf_path)
 plt.show()
 
 # ----------------------------- Save binning --------------------------------- #

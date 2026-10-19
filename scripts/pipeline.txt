@@ -15,12 +15,12 @@ python 3MakeInputTess.py
 
 4. Tesselate the continuum of the original cube
 
-python Tesselation_Powerbin.py
+python 4TessCont.py
 
 
 5. Create a file of the continuum for input in FADO
 
-python MakeInputFADO.py
+python 5MakeInputFADO.py
 
 
 6. Run FADO
@@ -47,12 +47,12 @@ module load gcc/4
 
 7. Acess FADO tables and save the best fit in a table
 
-python SaveBestFADO.py
+python 7SaveBestFADO.py
 
 
 8. Continuum subtract FADO result to each individual pixel in the corresponding bin
 
-python ContSub.py
+python 8ContSub.py
 
 
 9. Create Narrow Filter maps of the continuum subtracted cube
@@ -60,19 +60,23 @@ python ContSub.py
 python NarrowFilterMaps.py
 
 
-10. Tesselate the Ha of the continuum subtracted cube
+10. Make input file of the Ha for tesselationo f the continuum subtracted cube
 
-python Tesselation_Ha.py
+python 3MakeInputTess.py
 
+11. Tesselate the Ha of the continuum subtracted cube
 
-11. Fit the lines in the tesselated continuum subtracted cube
-
-11.1 Individual fitting
-11.1.1 Ha + NII
-
-11.1.2 Hb
+python 10TessHa.py
 
 
-11.2 Group fitting
+12. Fit the lines in the tesselated continuum subtracted cube
+
+12.1 Individual fitting
+12.1.1 Ha + NII
+
+12.1.2 Hb
+
+
+12.2 Group fitting
 
 
