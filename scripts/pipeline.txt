@@ -26,10 +26,15 @@ python MakeInputFADO.py
 6. Run FADO
 
 
-7. Acess FADO tables and save them as files?
+7. Acess FADO tables and save the best fit in a table
+
+python SaveBestFADO.py
 
 
 8. Continuum subtract FADO result to each individual pixel in the corresponding bin
 
 python ContSub.py
+
+
+
 

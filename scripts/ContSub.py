@@ -3,7 +3,7 @@ Created on Tue Oct 13 2026
 
 @author: M. Pólvora Fonseca
 
-Continuum subtract the initial map.
+Continuum subtract the initial map. Interpolates the wavelenghts of FADO if necessary.
 
 Outputs:
     - Continuum subtracted spectral cube as .fits file
@@ -115,6 +115,7 @@ with fits.open(cube_file_path, memmap=True) as cube_file:
         # Extract the FADO spectrum
         fado_spectrum = fado_spectra[fado_index].copy()
 
+        # Un-normalize the fado spectrum
         fado_spectrum *= fado_normflux[fado_index]
 
         # Open the specific pixel in original cube and take out the spectrum
@@ -150,15 +151,52 @@ with fits.open(cube_file_path, memmap=True) as cube_file:
             right=np.nan
         )
 
-        # Subtract the continuum
+        # ------------------------- Scale the FADO continuum ------------------------- #
+
+        # Define the normalization wavelength range
+        norm_mask = (
+            (muse_waves >= 7000)
+            & (muse_waves <= 7200)
+            & np.isfinite(muse_spectrum)
+            & np.isfinite(interpolated_continuum)
+        )
+
+        # Calculate the scale factor using the median flux ratio
+        if np.count_nonzero(norm_mask) > 0:
+
+            valid_muse = muse_spectrum[norm_mask]
+            valid_fado = interpolated_continuum[norm_mask]
+
+            # Avoid division by zero
+            nonzero = valid_fado != 0
+
+            if np.any(nonzero):
+
+                scale_factor = np.median(valid_muse[nonzero] / valid_fado[nonzero])
+
+                # Scale the interpolated FADO continuum
+                interpolated_continuum *= scale_factor
+
+            else:
+                raise ValueError(
+                    f'FADO continuum is zero throughout the normalization '
+                    f'range for bin {bin_number}.'
+                )
+
+        else:
+            raise ValueError(
+                f'No valid wavelength points between 7000 and 7200 Å '
+                f'for bin {bin_number}.'
+            )
+
+        # ------------------------- Subtract the continuum --------------------------- #
+
         contsub_spectrum = (
             muse_spectrum - interpolated_continuum
         )
 
         # Store the continuum-subtracted spectrum
         contsub_cube[:, y_pixel, x_pixel] = contsub_spectrum
-
-
 
     # ----------------------------- Save the cube ----------------------------- #
 
