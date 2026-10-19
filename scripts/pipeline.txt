@@ -1,19 +1,19 @@
 1. Create Narrow Filter maps of the original cube
 
-python NarrowFilterMaps.py
+python 1NarrowFilterMaps.py
 
 
-2. Create Narrow Filter map of the continuum
+2. Create a Narrow Filter map of the continuum
 
-python ContMap.py
+python 2ContMap.py
 
 
 3. Make input file of the continuum for tesselation
 
-python MakeInputTess.py
+python 3MakeInputTess.py
 
 
-4. Tesselate the continuum
+4. Tesselate the continuum of the original cube
 
 python Tesselation_Powerbin.py
 
@@ -24,6 +24,25 @@ python MakeInputFADO.py
 
 
 6. Run FADO
+
+module load gcc/4
+
+./FADO \
+    -c ./FADO.config \
+    -l ./FADOInput/list_spectra.txt \
+    -o /data2/dafonseca/FADOv1b_patch1.0/output/ \
+    -p /data2/dafonseca/FADOv1b_patch1.0/plots/ \
+    -t /data2/dafonseca/FADOv1b_patch1.0/tables/ \
+    -b ./SSPs/Base.BC03.Haro11 \
+    -r 2.5 \
+    -d 92.1 \
+    -s 4750 9300 1.25 \
+    -z -400 400 10 \
+    -v 5700 6700 100 \
+    -u 1.e-20 \
+    -g 0 \
+    -mdir ./museMask.txt
+
 
 
 7. Acess FADO tables and save the best fit in a table
@@ -36,5 +55,24 @@ python SaveBestFADO.py
 python ContSub.py
 
 
+9. Create Narrow Filter maps of the continuum subtracted cube
+
+python NarrowFilterMaps.py
+
+
+10. Tesselate the Ha of the continuum subtracted cube
+
+python Tesselation_Ha.py
+
+
+11. Fit the lines in the tesselated continuum subtracted cube
+
+11.1 Individual fitting
+11.1.1 Ha + NII
+
+11.1.2 Hb
+
+
+11.2 Group fitting
 
 
